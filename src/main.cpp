@@ -5,13 +5,16 @@
 #include "Segment.h"
 #include "pins.h"
 
-SendOnlySoftwareSerial *serial = new SendOnlySoftwareSerial(PIN_D6);
+//SendOnlySoftwareSerial *serial = new SendOnlySoftwareSerial(PIN_D6);
+HardwareSerial *serial = &Serial;
 Segment *seg;
 IRrecv *rec;
 
-#define btnUp PIN_D14
-#define btnDown PIN_D11
-#define btnSelect PIN_D13
+#define btnUp D1
+#define btnDown D2
+#define btnSelect 0
+#define LED1 LED_BUILTIN //D7
+#define LED2 LED_BUILTIN //D8
 int counter;
 int state;
 bool pressedUp;
@@ -19,14 +22,15 @@ bool pressedDown;
 unsigned long pressed;
 unsigned long led1;
 unsigned long led2;
-uint8_t pinsIn[] = { PIN_D1, PIN_D4, PIN_D3, PIN_D2 };
-uint8_t pinsDig[] = { PIN_DI1, PIN_DI2, PIN_DI3, PIN_DI4 };
+uint8_t pinsIn[] = { D3, D4, D5, D6 };
+uint8_t pinsDig[] = { D10, D9, D8, D7 };
 IRData data;
+
 
 void setup()
 {
     seg = new Segment(4, false);
-    rec = new IRrecv(PIN_D9);
+    rec = new IRrecv(D0);
 
     seg->setInputPins(pinsIn);
     seg->setDigitPins(pinsDig);
@@ -61,13 +65,13 @@ void printIRData(IRData _data)
 void ShowLED1(int time)
 {
     led1 = millis() + time;
-    digitalWrite(PIN_D7, HIGH);
+    digitalWrite(LED1, HIGH);
 }
 
 void ShowLED2(int time)
 {
     led2 = millis() + time;
-    digitalWrite(PIN_D8, HIGH);
+    digitalWrite(LED2, HIGH);
 }
 
 
@@ -122,18 +126,19 @@ void loop()
 
     if(led1 != 0 && led1 < millis())
     {
-        digitalWrite(PIN_D7, LOW);
+        digitalWrite(LED1, LOW);
         led1 = 0;
     }
 
     if(led2 != 0 && led2 < millis())
     {
-        digitalWrite(PIN_D8, LOW);
+        digitalWrite(LED2, LOW);
         led2 = 0;
     }
 
     switch(state)
     {
+        //Received ACK from other board
         case -1:
         {
             if(!pressed)
@@ -149,6 +154,7 @@ void loop()
             }
         }
 
+        //Idle
         case 0:
         {
             if(digitalRead(btnUp))
@@ -166,6 +172,7 @@ void loop()
             break;
         }
 
+        //Select IR-Code ID
         case 1:
         {
             if(digitalRead(btnUp) && !pressedDown && !pressedUp)
@@ -213,6 +220,7 @@ void loop()
             break;
         }
 
+        //Learn IR-Code
         case 2:
         {
             if(!pressedUp)
@@ -233,6 +241,7 @@ void loop()
             break;
         }
 
+        //Verify IR-Code
         case 3:
         {
             if(rec->decode())
