@@ -1,11 +1,9 @@
 #include <Arduino.h>
-#include <SendOnlySoftwareSerial.h>
 
 #include "IRremote.h"
 #include "Segment.h"
 #include "pins.h"
 
-//SendOnlySoftwareSerial *serial = new SendOnlySoftwareSerial(PIN_D6);
 HardwareSerial *serial = &Serial;
 Segment *seg;
 IRrecv *rec;
@@ -13,8 +11,8 @@ IRrecv *rec;
 #define btnUp D1
 #define btnDown D2
 #define btnSelect 0
-#define LED1 LED_BUILTIN //D7
-#define LED2 LED_BUILTIN //D8
+#define LED1 LED_BUILTIN
+#define LED2 LED_BUILTIN
 int counter;
 int state;
 bool pressedUp;
