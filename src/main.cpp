@@ -14,11 +14,11 @@ IRrecv *rec;
 #define btnSelect PIN_D13
 int counter;
 int state;
-int pressedUp;
-int pressedDown;
-int pressed;
-int led1;
-int led2;
+bool pressedUp;
+bool pressedDown;
+unsigned long pressed;
+unsigned long led1;
+unsigned long led2;
 uint8_t pinsIn[] = { PIN_D1, PIN_D4, PIN_D3, PIN_D2 };
 uint8_t pinsDig[] = { PIN_DI1, PIN_DI2, PIN_DI3, PIN_DI4 };
 IRData data;
@@ -136,16 +136,16 @@ void loop()
     {
         case -1:
         {
-            if(!pressedUp)
+            if(!pressed)
             {
-                pressedUp = millis();
+                pressed = millis();
                 seg->setNumber(counter, false);
             }
-            if(pressedUp + 2000 < millis())
+            if(pressed + 2000 < millis())
             {
                 state = 0;
                 counter = 0;
-                pressedUp = 0;
+                pressed = 0;
             }
         }
 
