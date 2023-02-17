@@ -20,7 +20,7 @@ unsigned long pressed;
 unsigned long led1;
 unsigned long led2;
 uint8_t pinsIn[] = { PIN_D1, PIN_D4, PIN_D3, PIN_D2 };
-uint8_t pinsDig[] = { PIN_DI1, PIN_DI2, PIN_DI3, PIN_DI4 };
+uint8_t pinsDig[] = { PIN_DI3, PIN_DI1, PIN_DI2, PIN_DI4 };
 IRData data;
 
 void setup()
