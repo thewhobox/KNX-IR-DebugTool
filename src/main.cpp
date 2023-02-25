@@ -9,9 +9,9 @@ SendOnlySoftwareSerial *serial = new SendOnlySoftwareSerial(PIN_D6);
 Segment *seg;
 IRrecv *rec;
 
-#define btnUp PIN_D14
-#define btnDown PIN_D11
-#define btnSelect PIN_D13
+#define btnUp PIN_D13
+#define btnDown PIN_D14
+#define btnSelect PIN_D11
 int counter;
 int state;
 bool pressedUp;
@@ -25,23 +25,31 @@ IRData data;
 
 void setup()
 {
-    seg = new Segment(4, false);
-    rec = new IRrecv(PIN_D9);
+    seg = new Segment(3);
+    rec = new IRrecv();
 
     seg->setInputPins(pinsIn);
     seg->setDigitPins(pinsDig);
+    seg->setSerial(serial);
 
     pinMode(btnUp, INPUT);
     pinMode(btnDown, INPUT);
+    pinMode(PIN_D7, OUTPUT);
+    pinMode(PIN_D8, OUTPUT);
+    pinMode(PIN_D9, INPUT);
 
-    seg->setDigits(-1);
+    seg->setNumber(-1);
 
 
     Serial.begin(115200);
     serial->begin(115200);
 
-    delay(10000);
+    delay(5000);
     serial->println("Starte");
+    seg->setDigits(-1);
+
+    rec->begin(PIN_D9);
+    rec->enableIRIn();
 }
 
 void printIRData(IRData _data)
@@ -162,6 +170,7 @@ void loop()
                 state = 1;
                 pressedUp = false;
                 serial->println("Go to State 1");
+                ShowLED1(200);
             }
             break;
         }
@@ -185,13 +194,15 @@ void loop()
                     pressedUp = false;
                     counter++;
                     seg->setNumber(counter, false);
-                    serial->println("Count up");
+                    serial->print("Count up: ");
+                    serial->println(counter);
+
                 }
                 if(millis() - pressed > 2000)
                 {
                     pressedUp = false;
                     state = 2;
-                    ShowLED1(500);
+                    ShowLED1(200);
                     serial->println("Go to State 2");
                 }
             }
@@ -218,10 +229,15 @@ void loop()
             if(!pressedUp)
             {
                 pressedUp = true;
-                seg->setDigit(-2, 3);
+                seg->setDigit(-2, 2);
+                pressed = millis();
             }
             if(rec->decode())
             {
+                rec->resume();
+                if(millis() - pressed < 100)
+                    return;
+                pressed = millis();
                 pressedUp = false;
                 data = rec->decodedIRData;
                 rec->resume();
@@ -237,17 +253,28 @@ void loop()
         {
             if(rec->decode())
             {
+                rec->resume();
+                if(pressed + 500 > millis())
+                    return;
+                    
+                if(!pressedUp)
+                {
+                    pressedUp = true;
+                    return;
+                }
                 IRData _data = rec->decodedIRData;
                 printIRData(_data);
-                rec->resume();
-                if(_data.address == data.address)
+                if(_data.address != data.address)
                 {
                     serial->println("Ungleiche Adresse");
+                    serial->print(data.address);
+                    serial->print(" ");
+                    serial->println(_data.address);
                     state = 2;
                     ShowLED2(1000);
                     return;
                 }
-                if(_data.command == data.command)
+                if(_data.command != data.command)
                 {
                     serial->println("Ungleiches Kommando");
                     state = 2;
@@ -260,6 +287,7 @@ void loop()
                 state = 0;
                 counter = 0;
                 seg->setDigits(-1);
+                pressedUp = false;
             }
         }
     }

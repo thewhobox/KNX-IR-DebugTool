@@ -30,7 +30,7 @@
 */
 
 #define PIN_D1 PIN_PC1
-#define PIN_D2 PIN_PC2
+#define PIN_D2 PIN_PC0
 #define PIN_D3 PIN_PB2
 #define PIN_D4 PIN_PB1
 #define PIN_D5 PIN_PB0
