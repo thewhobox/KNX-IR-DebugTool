@@ -16,6 +16,7 @@ int counter;
 int state;
 bool pressedUp;
 bool pressedDown;
+bool pressedSelect;
 unsigned long pressed;
 unsigned long led1;
 unsigned long led2;
@@ -25,7 +26,7 @@ IRData data;
 
 void setup()
 {
-    seg = new Segment(3);
+    seg = new Segment(4);
     rec = new IRrecv();
 
     seg->setInputPins(pinsIn);
@@ -92,9 +93,12 @@ void sendIRData()
         data.command & 0xFF,
         (data.numberOfBits >> 8) & 0xFF,
         data.numberOfBits & 0xFF,
+        (data.extra >> 8) & 0xFF,
+        data.extra & 0xFF,
         data.flags,
+        0xAC
     };
-    Serial.write(pckg, 10);
+    Serial.write(pckg, 13);
 }
 
 void checkSerial()
@@ -177,34 +181,33 @@ void loop()
 
         case 1:
         {
-            if(digitalRead(btnUp) && !pressedDown && !pressedUp)
+            if(digitalRead(btnSelect) && !pressedUp && !pressedDown && !pressedSelect)
+            {
+                pressedSelect = true;
+                pressed = millis();
+            }
+            if(digitalRead(btnUp) && !pressedDown && !pressedUp && !pressedSelect)
             {
                 pressedUp = true;
-                pressed = millis();
             }
-            if(digitalRead(btnDown) && !pressedDown && !pressedUp)
+            if(digitalRead(btnDown) && !pressedDown && !pressedUp && !pressedSelect)
             {
                 pressedDown = true;
-                pressed = millis();
             }
-            if(pressedUp && counter != 0)
+            if(pressedSelect && pressed + 4000 < millis())
             {
-                if(pressedUp && !digitalRead(btnUp))
-                {
-                    pressedUp = false;
-                    counter++;
-                    seg->setNumber(counter, false);
-                    serial->print("Count up: ");
-                    serial->println(counter);
-
-                }
-                if(millis() - pressed > 2000)
-                {
-                    pressedUp = false;
-                    state = 2;
-                    ShowLED1(200);
-                    serial->println("Go to State 2");
-                }
+                pressedSelect = false;
+                state = 2;
+                ShowLED1(200);
+                serial->println("Go to State 2");
+            }
+            if(pressedUp && !digitalRead(btnUp))
+            {
+                pressedUp = false;
+                counter++;
+                seg->setNumber(counter, false);
+                serial->print("Count up: ");
+                serial->println(counter);
             }
             if(!digitalRead(btnDown) && pressedDown)
             {
@@ -218,7 +221,8 @@ void loop()
                     ShowLED2(1000);
                 } else {
                     seg->setNumber(counter, false);
-                    serial->println("Count down");
+                    serial->print("Count down: ");
+                    serial->println(counter);
                 }
             }
             break;
@@ -229,7 +233,7 @@ void loop()
             if(!pressedUp)
             {
                 pressedUp = true;
-                seg->setDigit(-2, 2);
+                seg->setDigit(-2, 3);
                 pressed = millis();
             }
             if(rec->decode())
@@ -282,7 +286,7 @@ void loop()
                     return;
                 }
                 serial->println("Got same command");
-                ShowLED1(500);
+                ShowLED1(1000);
                 sendIRData();
                 state = 0;
                 counter = 0;
