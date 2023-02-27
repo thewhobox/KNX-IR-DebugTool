@@ -73,12 +73,13 @@ void ShowLED2(int time)
 }
 
 
-void sendIRData()
+void sendIRData(uint8_t index)
 {
     uint8_t pckg[] = 
     {
         0xAB,
         0xFF,
+        index,
         data.protocol,
         (data.address >> 8) & 0xFF,
         data.address & 0xFF,
@@ -88,7 +89,7 @@ void sendIRData()
         data.numberOfBits & 0xFF,
         data.flags,
     };
-    Serial.write(pckg, 10);
+    Serial.write(pckg, 11);
 }
 
 void checkSerial()
@@ -263,7 +264,7 @@ void loop()
                 }
                 serial->println("Got same command");
                 ShowLED1(500);
-                sendIRData();
+                sendIRData(counter);
                 state = 0;
                 counter = 0;
                 seg->setDigits(-1);
