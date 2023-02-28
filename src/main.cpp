@@ -80,12 +80,13 @@ void ShowLED2(int time)
 }
 
 
-void sendIRData()
+void sendIRData(uint8_t index)
 {
     uint8_t pckg[] = 
     {
         0xAB,
         0xFF,
+        index,
         data.protocol,
         (data.address >> 8) & 0xFF,
         data.address & 0xFF,
@@ -98,7 +99,7 @@ void sendIRData()
         data.flags,
         0xAC
     };
-    Serial.write(pckg, 13);
+    Serial.write(pckg, 14);
 }
 
 void checkSerial()
@@ -205,6 +206,8 @@ void loop()
             {
                 pressedUp = false;
                 counter++;
+                if(counter == 267)
+                    counter = 1;
                 seg->setNumber(counter, false);
                 serial->print("Count up: ");
                 serial->println(counter);
@@ -214,16 +217,10 @@ void loop()
                 pressedDown = false;
                 counter--;
                 if(counter == 0)
-                {
-                    seg->setDigits(-1);
-                    state = 0;
-                    serial->println("Go to State 0");
-                    ShowLED2(1000);
-                } else {
-                    seg->setNumber(counter, false);
-                    serial->print("Count down: ");
-                    serial->println(counter);
-                }
+                    counter = 256;
+                seg->setNumber(counter, false);
+                serial->print("Count down: ");
+                serial->println(counter);
             }
             break;
         }
@@ -287,7 +284,7 @@ void loop()
                 }
                 serial->println("Got same command");
                 ShowLED1(1000);
-                sendIRData();
+                sendIRData(counter);
                 state = 0;
                 counter = 0;
                 seg->setDigits(-1);
