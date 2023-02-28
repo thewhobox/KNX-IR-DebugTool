@@ -284,7 +284,7 @@ void loop()
                 }
                 serial->println("Got same command");
                 ShowLED1(1000);
-                sendIRData(counter);
+                sendIRData(counter - 1);
                 state = 0;
                 counter = 0;
                 seg->setDigits(-1);
