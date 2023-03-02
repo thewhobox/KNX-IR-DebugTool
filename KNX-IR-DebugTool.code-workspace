@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": ".pio/libdeps/ATmega328P/BCD-Segment"
+		}
+	],
+	"settings": {}
+}
