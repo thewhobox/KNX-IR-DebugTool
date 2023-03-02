@@ -42,10 +42,18 @@ void setup()
     seg->setNumber(-1);
 
 
-    Serial.begin(115200);
     serial->begin(115200);
 
-    delay(5000);
+    digitalWrite(PIN_D8, HIGH);
+    delay(3000);
+
+    Serial.begin(115200);
+    while (!Serial.available())
+    {
+        delay(1);
+    }
+
+    digitalWrite(PIN_D8, LOW);
     serial->println("Starte");
     seg->setDigits(-1);
 
