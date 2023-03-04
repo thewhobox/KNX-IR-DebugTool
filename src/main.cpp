@@ -184,6 +184,8 @@ void loop()
                 pressedUp = false;
                 serial->println("Go to State 1");
                 ShowLED1(200);
+                Serial.write(0xAB);
+                Serial.write(0xFE);
             }
             break;
         }
