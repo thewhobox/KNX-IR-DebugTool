@@ -122,6 +122,7 @@ void checkSerial()
             case 0xFE:
             {
                 counter = Serial.read();
+                counter++;
                 state = -1;
                 break;
             }
@@ -130,6 +131,13 @@ void checkSerial()
             {
                 ShowLED1(2000);
                 ShowLED2(2000);
+                break;
+            }
+            
+            case 0xFC:
+            {
+                counter = 0;
+                state = -1;
                 break;
             }
         }
@@ -157,8 +165,9 @@ void loop()
     {
         case -1:
         {
-            if(!pressed)
+            if(!pressedUp)
             {
+                pressedUp = true;
                 pressed = millis();
                 seg->setNumber(counter, false);
             }
@@ -166,12 +175,16 @@ void loop()
             {
                 state = 0;
                 counter = 0;
-                pressed = 0;
+                pressedUp = false;
+                seg->setDigits(-1);
             }
         }
 
         case 0:
         {
+            checkSerial();
+            if(state != 0) return;
+
             if(digitalRead(btnUp))
             {
                 pressedUp = true;
